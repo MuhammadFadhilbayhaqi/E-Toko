@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">E-Toko</string>
+    <string name="cashier_menu" translatable="false">Selamat Datang Di Menu Kasir</string>
+    <string name="product_name" translatable="false">Nama Barang</string>
+    <string name="price" translatable="false">Harga</string>
+    <string name="quantity" translatable="false">Jumlah</string>
+    <string name="payment_method" translatable="false">Metode Pembayaran</string>
+    <string name="count" translatable="false">Hitung</string>
+    <string name="total_price" translatable="false">Harga Total: %1$.2f</string>
+    <string name="input_invalid" translatable="false">Tidak Boleh Kosong</string>
+    <string name="about_aplication" translatable="false">Tentang Aplikasi</string>
+    <string name="about_me" translatable="false">Tentang Pengembang</string>
+    <string name="copyright" translatable="false">E-Toko merupakan sebuah aplikasi android untung membantu UMKM dalam
+    menjalankan bisnisnya. \n\nCopyright © 2024 Muhammad Fadhil Bayhaqi \n All Rights Reserved</string>
+    <string name="copyright2" translatable="false">Halo !!! \nPerkenalkan nama saya Muhammad Fadhil Bayhaqi mahasiswa aktif
+        telkom university, saya membuat aplikasi ini untuk keperluan Assesment 1 Mobpro :)</string>
+    <string name="back" translatable="false">Kembali</string>
+    <string name="share" translatable="false">Bagikan</string>
+    <string name="share_templete" translatable="false">Nama Barang: %1$s \nHarga: %2$s\nJumlah: %3$s\nHarga Total: %4$s</string>
+    <string name="image" translatable="false">Gambar %2$s</string>
+</resources>
