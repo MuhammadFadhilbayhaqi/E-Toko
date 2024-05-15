@@ -1,9 +1,9 @@
 package org.d3if3102.e_toko.ui.screen
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
 import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,46 +11,59 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.d3if3102.e_toko.R
+import org.d3if3102.e_toko.database.TransaksiDb
+import org.d3if3102.e_toko.model.Transaksi
 import org.d3if3102.e_toko.navigation.Screen
 import org.d3if3102.e_toko.ui.theme.ETokoTheme
+import org.d3if3102.e_toko.util.SettingsDataStore
+import org.d3if3102.e_toko.util.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(navController: NavHostController) {
+    val dataStore = SettingsDataStore(LocalContext.current)
+    val showList by dataStore.layoutFlow.collectAsState(initial = true)
+
     Scaffold (
         topBar = {
             TopAppBar(
@@ -63,157 +76,168 @@ fun MainScreen(navController: NavHostController) {
                 ),
                 actions = {
                     IconButton(onClick = {
-                        navController.navigate(Screen.AboutProject.route)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            dataStore.saveLayout(!showList)
+                        }
+                    }) {
+                        Icon(
+                            painter = painterResource(
+                                if (showList) R.drawable.baseline_grid_view_24
+                                else R.drawable.baseline_view_list_24
+                            ),
+                            contentDescription = stringResource(
+                                if (showList) R.string.grid
+                                else R.string.list
+                            ),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
-                    ) {
+                    IconButton(onClick = {
+                        navController.navigate(Screen.AboutProject.route)
+                    }) {
                         Icon(
                             imageVector = Icons.Outlined.Info,
                             contentDescription = stringResource(id = R.string.about_aplication),
-                            tint = MaterialTheme.colorScheme.primary)
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate(Screen.FormBaru.route)
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(id = R.string.tambah_transaksi),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     ){ padding ->
         Box(modifier = Modifier.padding(padding)) {
-            ScreenContent(Modifier.padding((padding)))
+            ScreenContent(showList, Modifier.padding(padding), navController)
         }
     }
 }
 
-@SuppressLint("SuspiciousIndentation")
 @Composable
-fun ScreenContent(modifier: Modifier) {
-    var namaBarang by rememberSaveable { mutableStateOf("")}
-    var namaBarangError by rememberSaveable { mutableStateOf(false)}
-    var harga by rememberSaveable { mutableStateOf("")}
-    var hargaError by rememberSaveable { mutableStateOf(false)}
-    var jumlah by rememberSaveable { mutableStateOf("")}
-    var jumlahError by rememberSaveable { mutableStateOf(false)}
-    var total by rememberSaveable { mutableFloatStateOf(0f)}
+fun ScreenContent(showList: Boolean, modifier: Modifier, navController: NavHostController) {
     val context = LocalContext.current
+    val db = TransaksiDb.getInstance(context)
+    val factory = ViewModelFactory(db.dao)
+    val viewModel: MainViewModel = viewModel(factory = factory)
+    val data by viewModel.data.collectAsState()
 
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Text(
-            text = stringResource(id = R.string.cashier_menu),
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(
-            value = namaBarang,
-            onValueChange = {namaBarang = it},
-            label = { Text(text = stringResource(id = R.string.product_name))},
-            trailingIcon = { IconPicker(namaBarangError)},
-            supportingText = { ErrorHint(namaBarangError)},
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Next
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = harga,
-            onValueChange = {harga = it},
-            label = { Text(text = stringResource(id = R.string.price))},
-            trailingIcon = { IconPicker(hargaError)},
-            supportingText = { ErrorHint(hargaError)},
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Next
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = jumlah,
-            onValueChange =  {jumlah = it},
-            label = { Text(text = stringResource(id = R.string.quantity))},
-            trailingIcon = { IconPicker(jumlahError)},
-            supportingText = { ErrorHint(jumlahError)},
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Next
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Button(
-            onClick = {
-                namaBarangError = (namaBarang == "" || namaBarang == "0")
-                hargaError = (harga == "" || harga == "0")
-                jumlahError = (jumlah == "" || jumlah == "0")
-                if  (namaBarangError || hargaError || jumlahError) return@Button
-                      total = hitungTotal(harga.toFloat(), jumlah.toFloat())
-            },
-            modifier = Modifier.padding(top = 16.dp),
-            contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+
+    if (data.isEmpty()) {
+        Column (
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = stringResource(id = R.string.count) )
+            Image(
+                painter = painterResource(id = R.mipmap.ic_launcher),
+                contentDescription = stringResource(id = R.string.image),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .size(width = 110.dp, height = 110.dp)
+               )
+            Text(text = stringResource(id = R.string.list_kosong))
         }
-
-        if ( total != 0f) {
-            Divider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                thickness = 2.dp
-            )
-            Text(
-                text = stringResource(id = R.string.total_price, total),
-                style = MaterialTheme.typography.titleLarge
-            )
-            Button(
-                onClick = {
-                          shareData(
-                              context = context,
-                              message = context.getString(R.string.share_templete,
-                                  namaBarang, harga, jumlah, total.toString().uppercase())
-                          )
-                },
-                modifier = Modifier.padding(top = 8.dp),
-                contentPadding = PaddingValues(horizontal = 32.dp, vertical = 16.dp)
+    } else {
+        if (showList) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 84.dp)
             ) {
-                Text(text = stringResource(id = R.string.share))
+                items(data) {
+                    ListItem(transaksi = it) {
+                        navController.navigate(Screen.FormUbah.withId(it.id))
+                    }
+                    Divider()
+                }
+            }
+        }
+        else {
+            LazyVerticalStaggeredGrid(
+                modifier = modifier.fillMaxSize(),
+                columns = StaggeredGridCells.Fixed(2),
+                verticalItemSpacing = 8.dp,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(8.dp, 8.dp, 8.dp, 84.dp)
+            ) {
+                items(data) {
+                    GridItem(transaksi = it) {
+                        navController.navigate(Screen.FormUbah.withId(it.id))
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun IconPicker(isError: Boolean) {
-    if (isError) {
-        Icon(imageVector = Icons.Filled.Warning, contentDescription = null)
+fun ListItem(transaksi: Transaksi, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = transaksi.nama_barang,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,)
+        Text(
+            text = transaksi.harga.toString(),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis)
+        Text(text = transaksi.pembayaran)
+        Text(text = transaksi.jumlah.toString())
     }
 }
 
 @Composable
-fun ErrorHint(isError: Boolean) {
-    if (isError) {
-        Text(text = stringResource(id = R.string.input_invalid))
-    }
-}
-
-private fun hitungTotal(harga: Float, jumlah: Float): Float {
-    return harga * jumlah
-}
-
-private fun shareData(context: Context, message: String) {
-    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, message)
-    }
-    if (shareIntent.resolveActivity(context.packageManager) != null) {
-        context.startActivity(shareIntent)
+fun GridItem(transaksi: Transaksi, onClick: () -> Unit) {
+    Card (
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(1.dp, Color.Gray)
+    ){
+        Column(
+            modifier = Modifier.padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = transaksi.nama_barang,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,)
+            Text(
+                text = transaksi.harga.toString(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis)
+            Text(text = transaksi.pembayaran)
+            Text(text = transaksi.jumlah.toString())
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
-fun ScreePreview() {
+fun MainScreePreview() {
     ETokoTheme {
         MainScreen(rememberNavController())
     }

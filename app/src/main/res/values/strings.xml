@@ -4,10 +4,24 @@
     <string name="product_name" translatable="false">Nama Barang</string>
     <string name="price" translatable="false">Harga</string>
     <string name="quantity" translatable="false">Jumlah</string>
-    <string name="payment_method" translatable="false">Metode Pembayaran</string>
+    <string name="select_payment_method" translatable="false">Pilih Metode Pembayaran</string>
+    <string name="payment_method_cash" translatable="false">Cash</string>
+    <string name="payment_method_qris" translatable="false">Qris</string>
+    <string name="add" translatable="false">Tambah</string>
     <string name="count" translatable="false">Hitung</string>
-    <string name="total_price" translatable="false">Harga Total: %1$.2f</string>
-    <string name="input_invalid" translatable="false">Tidak Boleh Kosong</string>
+    <string name="total_price" translatable="false">Harga Total</string>
+    <string name="input_invalid" translatable="false">Tidak Boleh Ada Yang Kosong</string>
+    <string name="list" translatable="false">Tampilan List</string>
+    <string name="grid" translatable="false">Tampilan Grid</string>
+    <string name="list_kosong" translatable="false">Belum ada data</string>
+    <string name="tambah_transaksi" translatable="false">Tambah Transaksi</string>
+    <string name="pesan_hapus" translatable="false">Hapus Catatan Ini</string>
+    <string name="tombol_hapus" translatable="false">Hapus</string>
+    <string name="tombol_batal" translatable="false">Batal</string>
+    <string name="simpan" translatable="false">Simpan</string>
+    <string name="hapus" translatable="false">Hapus Barang</string>
+    
+    
     <string name="about_aplication" translatable="false">Tentang Aplikasi</string>
     <string name="about_me" translatable="false">Tentang Pengembang</string>
     <string name="copyright" translatable="false">E-Toko merupakan sebuah aplikasi android untung membantu UMKM dalam

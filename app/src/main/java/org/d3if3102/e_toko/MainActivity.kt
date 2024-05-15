@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
 import org.d3if3102.e_toko.model.DeveloperImage
 import org.d3if3102.e_toko.navigation.SetupNavGraph
 import org.d3if3102.e_toko.ui.theme.ETokoTheme
@@ -17,9 +16,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ETokoTheme {
-                // A surface container using the 'background' color from the theme
+
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = androidx.compose.ui.Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     SetupNavGraph()
@@ -32,5 +31,4 @@ class MainActivity : ComponentActivity() {
             DeveloperImage("fadhil", R.mipmap.fadhil)
         )
     }
-
 }
